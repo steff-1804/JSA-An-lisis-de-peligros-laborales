@@ -89,11 +89,11 @@
     </div>
 
     <div class="card">
-        <h2>Registro de peligro</h2>
+        <h2>Actividad</h2>
 
         <div class="form-group foto-box">
             <label>Foto de la actividad</label>
-            <p class="hint">Suba una foto de la actividad, condición insegura o peligro identificado. En celular también puede tomar foto directamente.</p>
+            <p class="hint">Suba una foto general de la actividad. En celular también puede tomar foto directamente.</p>
             <input type="file" id="foto" accept="image/*" capture="environment">
         </div>
 
@@ -108,6 +108,10 @@
                 <input type="text" id="actividad" placeholder="Ej: Ajuste de agitador">
             </div>
         </div>
+    </div>
+
+    <div class="card">
+        <h2>Agregar peligros a la actividad</h2>
 
         <div class="form-group">
             <label>Hazards and Potential Consequences</label>
@@ -118,33 +122,21 @@
                 <optgroup label="Riesgos mecánicos">
                     <option value="Caída de personas al mismo nivel">M1 - Caída de personas al mismo nivel</option>
                     <option value="Caída de personas a distinto nivel">M2 - Caída de personas a distinto nivel</option>
-                    <option value="Caída de objetos por desplome o derrumbamiento">M3 - Caída de objetos por desplome o derrumbamiento</option>
                     <option value="Caída de objetos por manipulación">M4 - Caída de objetos por manipulación</option>
-                    <option value="Caída de objetos desprendidos">M5 - Caída de objetos desprendidos</option>
-                    <option value="Resbalamiento por pisadas sobre objetos">M6 - Resbalamiento por pisadas sobre objetos</option>
                     <option value="Choque contra objetos móviles">M7 - Choque contra objetos móviles</option>
                     <option value="Choque contra objetos inmóviles">M8 - Choque contra objetos inmóviles</option>
                     <option value="Golpes por objetos o herramientas">M9 - Golpes por objetos o herramientas</option>
-                    <option value="Golpes contra objetos o superficies">M10 - Golpes contra objetos o superficies</option>
                     <option value="Cortes y lastimaduras por objetos, herramientas o superficies">M11 - Cortes y lastimaduras</option>
-                    <option value="Proyección de partículas">M12 - Proyección de partículas</option>
                     <option value="Atrapamiento por partes móviles de maquinaria">M13 - Atrapamiento por partes móviles</option>
                     <option value="Atrapamiento entre objetos">M14 - Atrapamiento entre objetos</option>
-                    <option value="Atrapamiento por vuelco de máquinas o vehículos">M15 - Atrapamiento por vuelco</option>
                     <option value="Atropello o golpes por contacto con vehículos">M16 - Atropello o contacto con vehículos</option>
-                    <option value="Asfixia por espacios confinados">M17 - Asfixia por espacios confinados</option>
-                    <option value="Quemaduras por contacto con superficies calientes">M18 - Quemaduras por superficies calientes</option>
-                    <option value="Laceración por objetos cortantes">M19 - Laceración</option>
                 </optgroup>
 
                 <optgroup label="Riesgos físicos">
                     <option value="Exposición a ruido excesivo">F1 - Ruido excesivo</option>
                     <option value="Exposición a vibraciones">F2 - Vibraciones</option>
                     <option value="Iluminación deficiente">F3 - Iluminación deficiente</option>
-                    <option value="Iluminación excesiva">F4 - Iluminación excesiva</option>
                     <option value="Quemaduras por contacto con temperaturas altas">F5 - Temperaturas altas</option>
-                    <option value="Estrés térmico por calor">F6 - Estrés térmico</option>
-                    <option value="Hipotermia por contacto con temperaturas bajas">F7 - Temperaturas bajas</option>
                     <option value="Contacto eléctrico directo">F12 - Contacto eléctrico directo</option>
                     <option value="Contacto eléctrico indirecto">F13 - Contacto eléctrico indirecto</option>
                 </optgroup>
@@ -154,9 +146,6 @@
                     <option value="Exposición a polvo inorgánico o metálico">Q02 - Polvo inorgánico o metálico</option>
                     <option value="Exposición a gases">Q03 - Gases</option>
                     <option value="Exposición a vapores químicos">Q04 - Vapores químicos</option>
-                    <option value="Exposición a nieblas químicas">Q05 - Nieblas químicas</option>
-                    <option value="Exposición a rocíos químicos">Q06 - Rocíos químicos</option>
-                    <option value="Exposición a humos de combustión">Q07 - Humos de combustión</option>
                     <option value="Quemaduras por contacto con químicos">Q08 - Quemaduras químicas</option>
                     <option value="Intoxicación por contacto con químicos">Q09 - Intoxicación química</option>
                 </optgroup>
@@ -166,7 +155,6 @@
                     <option value="Levantamiento manual de objetos">E02 - Levantamiento manual</option>
                     <option value="Movimiento corporal repetitivo">E03 - Movimiento repetitivo</option>
                     <option value="Posición forzada de pie">E04 - Posición forzada de pie</option>
-                    <option value="Posición forzada sentada">E05 - Posición forzada sentada</option>
                     <option value="Posición encorvada">E06 - Posición encorvada</option>
                     <option value="Empuje y arrastre de cargas">E08 - Empuje y arrastre</option>
                 </optgroup>
@@ -287,7 +275,32 @@
             </div>
         </div>
 
-        <button onclick="agregarFila()" class="btn">Agregar actividad</button>
+        <button onclick="agregarPeligroAActividad()" class="btn">
+            + Agregar peligro a esta actividad
+        </button>
+
+        <button onclick="guardarActividadConPeligros()" class="btn export">
+            Guardar actividad con peligros
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Peligros agregados a esta actividad</h2>
+
+        <table id="tabla_peligros_temp">
+            <thead>
+                <tr>
+                    <th>Peligro</th>
+                    <th>Tipo</th>
+                    <th>SEV</th>
+                    <th>LIKL</th>
+                    <th>CONT</th>
+                    <th>RPN</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
     <div class="card">
@@ -328,6 +341,7 @@
 
 <script>
 let matriz = [];
+let peligrosActividad = [];
 
 function calcularRPN(sev, likl, cont) {
     return Number(sev) * Number(likl) * Number(cont);
@@ -349,6 +363,64 @@ function copiarHazard() {
     } else {
         peligro.value = select.value;
     }
+}
+
+function agregarPeligroAActividad() {
+    const peligroItem = {
+        peligro: document.getElementById("peligro").value,
+        tipo_riesgo: document.getElementById("tipo_riesgo").value,
+        sev: document.getElementById("sev").value,
+        likl: document.getElementById("likl").value,
+        cont: document.getElementById("cont").value,
+        tipo_control_existente: document.getElementById("tipo_control_existente").value,
+        existing_controls: document.getElementById("existing_controls").value,
+        tipo_control_recomendado: document.getElementById("tipo_control_recomendado").value,
+        recommended_controls: document.getElementById("recommended_controls").value,
+        sev_post: document.getElementById("sev_post").value,
+        likl_post: document.getElementById("likl_post").value,
+        cont_post: document.getElementById("cont_post").value
+    };
+
+    if (!peligroItem.peligro) {
+        alert("Debe seleccionar o escribir un peligro.");
+        return;
+    }
+
+    peligrosActividad.push(peligroItem);
+    renderPeligrosTemporales();
+    limpiarCamposPeligro();
+}
+
+function renderPeligrosTemporales() {
+    const tbody = document.querySelector("#tabla_peligros_temp tbody");
+    tbody.innerHTML = "";
+
+    peligrosActividad.forEach((item, index) => {
+        const rpn = calcularRPN(item.sev, item.likl, item.cont);
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${item.peligro}</td>
+            <td>${item.tipo_riesgo}</td>
+            <td>${item.sev}</td>
+            <td>${item.likl}</td>
+            <td>${item.cont}</td>
+            <td class="${colorRPN(rpn)}">${rpn}</td>
+            <td><button class="delete" onclick="eliminarPeligroTemporal(${index})">X</button></td>
+        </tr>`;
+    });
+}
+
+function eliminarPeligroTemporal(index) {
+    peligrosActividad.splice(index, 1);
+    renderPeligrosTemporales();
+}
+
+function limpiarCamposPeligro() {
+    document.getElementById("hazard_select").value = "";
+    document.getElementById("peligro").value = "";
+    document.getElementById("existing_controls").value = "";
+    document.getElementById("recommended_controls").value = "";
 }
 
 function comprimirImagen(archivo, callback) {
@@ -392,54 +464,52 @@ function comprimirImagen(archivo, callback) {
     reader.readAsDataURL(archivo);
 }
 
-function agregarFila() {
-    const item = {
-        foto: "",
-        area: document.getElementById("area").value,
-        actividad: document.getElementById("actividad").value,
-        peligro: document.getElementById("peligro").value,
-        tipo_riesgo: document.getElementById("tipo_riesgo").value,
-        sev: document.getElementById("sev").value,
-        likl: document.getElementById("likl").value,
-        cont: document.getElementById("cont").value,
-        tipo_control_existente: document.getElementById("tipo_control_existente").value,
-        existing_controls: document.getElementById("existing_controls").value,
-        tipo_control_recomendado: document.getElementById("tipo_control_recomendado").value,
-        recommended_controls: document.getElementById("recommended_controls").value,
-        sev_post: document.getElementById("sev_post").value,
-        likl_post: document.getElementById("likl_post").value,
-        cont_post: document.getElementById("cont_post").value
-    };
+function guardarActividadConPeligros() {
+    const area = document.getElementById("area").value;
+    const actividad = document.getElementById("actividad").value;
+    const archivo = document.getElementById("foto").files[0];
 
-    if (!item.area || !item.actividad || !item.peligro) {
-        alert("Debe llenar área, actividad y peligro.");
+    if (!area || !actividad) {
+        alert("Debe llenar área y actividad.");
         return;
     }
 
-    const archivo = document.getElementById("foto").files[0];
+    if (peligrosActividad.length === 0) {
+        alert("Debe agregar al menos un peligro a la actividad.");
+        return;
+    }
+
+    function guardarConFoto(fotoBase64) {
+        peligrosActividad.forEach((peligroItem, index) => {
+            matriz.push({
+                foto: index === 0 ? fotoBase64 : "",
+                area: area,
+                actividad: actividad,
+                ...peligroItem
+            });
+        });
+
+        renderTabla();
+        limpiarFormularioCompleto();
+    }
 
     if (archivo) {
         comprimirImagen(archivo, function(imagenComprimida) {
-            item.foto = imagenComprimida;
-            matriz.push(item);
-            renderTabla();
-            limpiarFormulario();
+            guardarConFoto(imagenComprimida);
         });
     } else {
-        matriz.push(item);
-        renderTabla();
-        limpiarFormulario();
+        guardarConFoto("");
     }
 }
 
-function limpiarFormulario() {
+function limpiarFormularioCompleto() {
     document.getElementById("area").value = "";
     document.getElementById("actividad").value = "";
-    document.getElementById("peligro").value = "";
-    document.getElementById("existing_controls").value = "";
-    document.getElementById("recommended_controls").value = "";
     document.getElementById("foto").value = "";
-    document.getElementById("hazard_select").value = "";
+
+    peligrosActividad = [];
+    renderPeligrosTemporales();
+    limpiarCamposPeligro();
 }
 
 function eliminarFila(index) {
