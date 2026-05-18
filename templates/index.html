@@ -47,11 +47,6 @@
                 <input type="date" id="fecha_jsa">
                 <small class="hint">Formato: año-mes-día. Ejemplo: 2026-05-17</small>
             </div>
-
-            <div>
-                <label>Version</label>
-                <input type="text" id="version_jsa" placeholder="Ej: Mar 2026">
-            </div>
         </div>
 
         <div class="form-group">
@@ -332,7 +327,6 @@
 </div>
 
 <script>
-
 let matriz = [];
 
 function calcularRPN(sev, likl, cont) {
@@ -489,8 +483,7 @@ function prepararExportacion() {
         titulo_jsa: document.getElementById("titulo_jsa").value,
         documento_referencia: document.getElementById("documento_referencia").value,
         miembros_equipo: document.getElementById("miembros_equipo").value,
-        fecha_jsa: document.getElementById("fecha_jsa").value,
-        version_jsa: document.getElementById("version_jsa").value
+        fecha_jsa: document.getElementById("fecha_jsa").value
     };
 
     document.getElementById("data").value = JSON.stringify(matriz);
@@ -498,7 +491,6 @@ function prepararExportacion() {
 
     return true;
 }
-
 </script>
 
 </body>
