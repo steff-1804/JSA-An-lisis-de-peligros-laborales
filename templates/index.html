@@ -44,12 +44,13 @@
 
             <div>
                 <label>Date / Fecha</label>
-                <input type="text" id="fecha_jsa" placeholder="Ej: Febrero 12, 2026">
+                <input type="date" id="fecha_jsa">
+                <small class="hint">Formato: año-mes-día. Ejemplo: 2026-05-17</small>
             </div>
 
             <div>
                 <label>Version</label>
-                <input type="text" id="version_jsa" placeholder="Ej: Mar 2024">
+                <input type="text" id="version_jsa" placeholder="Ej: Mar 2026">
             </div>
         </div>
 
@@ -60,28 +61,125 @@
     </div>
 
     <div class="card">
+        <h2>Guía rápida de evaluación</h2>
+
+        <div class="info-grid">
+            <div>
+                <h3>SEV - Severidad</h3>
+                <p>1 = Leve</p>
+                <p>2 = Menor</p>
+                <p>3 = Moderado</p>
+                <p>4 = Grave</p>
+                <p>5 = Fatal</p>
+            </div>
+
+            <div>
+                <h3>LIKL - Probabilidad</h3>
+                <p>1 = Raro</p>
+                <p>2 = Poco probable</p>
+                <p>3 = Posible</p>
+                <p>4 = Probable</p>
+                <p>5 = Muy probable</p>
+            </div>
+
+            <div>
+                <h3>CONT - Control</h3>
+                <p>1 = Muy efectivo</p>
+                <p>2 = Efectivo</p>
+                <p>3 = Parcial</p>
+                <p>4 = Deficiente</p>
+                <p>5 = Sin control</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
         <h2>Registro de peligro</h2>
 
-        <div class="form-group">
+        <div class="form-group foto-box">
             <label>Foto de la actividad</label>
-            <input type="file" id="foto">
+            <p class="hint">Suba una foto de la actividad, condición insegura o peligro identificado. En celular también puede tomar foto directamente.</p>
+            <input type="file" id="foto" accept="image/*" capture="environment">
         </div>
 
         <div class="grid">
             <div>
                 <label>Área</label>
-                <input type="text" id="area">
+                <input type="text" id="area" placeholder="Ej: Producción, Bodega, Mezclado">
             </div>
 
             <div>
                 <label>Job / Activity Step</label>
-                <input type="text" id="actividad">
+                <input type="text" id="actividad" placeholder="Ej: Ajuste de agitador">
             </div>
         </div>
 
         <div class="form-group">
             <label>Hazards and Potential Consequences</label>
-            <textarea id="peligro"></textarea>
+
+            <select id="hazard_select" onchange="copiarHazard()">
+                <option value="">Seleccione un peligro</option>
+
+                <optgroup label="Riesgos mecánicos">
+                    <option value="Caída de personas al mismo nivel">M1 - Caída de personas al mismo nivel</option>
+                    <option value="Caída de personas a distinto nivel">M2 - Caída de personas a distinto nivel</option>
+                    <option value="Caída de objetos por desplome o derrumbamiento">M3 - Caída de objetos por desplome o derrumbamiento</option>
+                    <option value="Caída de objetos por manipulación">M4 - Caída de objetos por manipulación</option>
+                    <option value="Caída de objetos desprendidos">M5 - Caída de objetos desprendidos</option>
+                    <option value="Resbalamiento por pisadas sobre objetos">M6 - Resbalamiento por pisadas sobre objetos</option>
+                    <option value="Choque contra objetos móviles">M7 - Choque contra objetos móviles</option>
+                    <option value="Choque contra objetos inmóviles">M8 - Choque contra objetos inmóviles</option>
+                    <option value="Golpes por objetos o herramientas">M9 - Golpes por objetos o herramientas</option>
+                    <option value="Golpes contra objetos o superficies">M10 - Golpes contra objetos o superficies</option>
+                    <option value="Cortes y lastimaduras por objetos, herramientas o superficies">M11 - Cortes y lastimaduras</option>
+                    <option value="Proyección de partículas">M12 - Proyección de partículas</option>
+                    <option value="Atrapamiento por partes móviles de maquinaria">M13 - Atrapamiento por partes móviles</option>
+                    <option value="Atrapamiento entre objetos">M14 - Atrapamiento entre objetos</option>
+                    <option value="Atrapamiento por vuelco de máquinas o vehículos">M15 - Atrapamiento por vuelco</option>
+                    <option value="Atropello o golpes por contacto con vehículos">M16 - Atropello o contacto con vehículos</option>
+                    <option value="Asfixia por espacios confinados">M17 - Asfixia por espacios confinados</option>
+                    <option value="Quemaduras por contacto con superficies calientes">M18 - Quemaduras por superficies calientes</option>
+                    <option value="Laceración por objetos cortantes">M19 - Laceración</option>
+                </optgroup>
+
+                <optgroup label="Riesgos físicos">
+                    <option value="Exposición a ruido excesivo">F1 - Ruido excesivo</option>
+                    <option value="Exposición a vibraciones">F2 - Vibraciones</option>
+                    <option value="Iluminación deficiente">F3 - Iluminación deficiente</option>
+                    <option value="Iluminación excesiva">F4 - Iluminación excesiva</option>
+                    <option value="Quemaduras por contacto con temperaturas altas">F5 - Temperaturas altas</option>
+                    <option value="Estrés térmico por calor">F6 - Estrés térmico</option>
+                    <option value="Hipotermia por contacto con temperaturas bajas">F7 - Temperaturas bajas</option>
+                    <option value="Contacto eléctrico directo">F12 - Contacto eléctrico directo</option>
+                    <option value="Contacto eléctrico indirecto">F13 - Contacto eléctrico indirecto</option>
+                </optgroup>
+
+                <optgroup label="Riesgos químicos">
+                    <option value="Exposición a polvo orgánico">Q01 - Polvo orgánico</option>
+                    <option value="Exposición a polvo inorgánico o metálico">Q02 - Polvo inorgánico o metálico</option>
+                    <option value="Exposición a gases">Q03 - Gases</option>
+                    <option value="Exposición a vapores químicos">Q04 - Vapores químicos</option>
+                    <option value="Exposición a nieblas químicas">Q05 - Nieblas químicas</option>
+                    <option value="Exposición a rocíos químicos">Q06 - Rocíos químicos</option>
+                    <option value="Exposición a humos de combustión">Q07 - Humos de combustión</option>
+                    <option value="Quemaduras por contacto con químicos">Q08 - Quemaduras químicas</option>
+                    <option value="Intoxicación por contacto con químicos">Q09 - Intoxicación química</option>
+                </optgroup>
+
+                <optgroup label="Riesgos ergonómicos">
+                    <option value="Sobreesfuerzo físico">E01 - Sobreesfuerzo físico</option>
+                    <option value="Levantamiento manual de objetos">E02 - Levantamiento manual</option>
+                    <option value="Movimiento corporal repetitivo">E03 - Movimiento repetitivo</option>
+                    <option value="Posición forzada de pie">E04 - Posición forzada de pie</option>
+                    <option value="Posición forzada sentada">E05 - Posición forzada sentada</option>
+                    <option value="Posición encorvada">E06 - Posición encorvada</option>
+                    <option value="Empuje y arrastre de cargas">E08 - Empuje y arrastre</option>
+                </optgroup>
+
+                <option value="Otro">Otro / Añadir manualmente</option>
+            </select>
+
+            <textarea id="peligro" placeholder="Describa el peligro y la consecuencia potencial"></textarea>
         </div>
 
         <div class="grid">
@@ -99,17 +197,35 @@
 
             <div>
                 <label>SEV</label>
-                <input type="number" id="sev" value="3" min="1" max="5">
+                <select id="sev">
+                    <option value="1">1 - Leve</option>
+                    <option value="2">2 - Menor</option>
+                    <option value="3" selected>3 - Moderado</option>
+                    <option value="4">4 - Grave</option>
+                    <option value="5">5 - Fatal</option>
+                </select>
             </div>
 
             <div>
                 <label>LIKL</label>
-                <input type="number" id="likl" value="2" min="1" max="5">
+                <select id="likl">
+                    <option value="1">1 - Raro</option>
+                    <option value="2" selected>2 - Poco probable</option>
+                    <option value="3">3 - Posible</option>
+                    <option value="4">4 - Probable</option>
+                    <option value="5">5 - Muy probable</option>
+                </select>
             </div>
 
             <div>
                 <label>CONT</label>
-                <input type="number" id="cont" value="3" min="1" max="5">
+                <select id="cont">
+                    <option value="1">1 - Muy efectivo</option>
+                    <option value="2">2 - Efectivo</option>
+                    <option value="3" selected>3 - Parcial</option>
+                    <option value="4">4 - Deficiente</option>
+                    <option value="5">5 - Sin control</option>
+                </select>
             </div>
         </div>
 
@@ -144,17 +260,35 @@
         <div class="grid">
             <div>
                 <label>SEV Post</label>
-                <input type="number" id="sev_post" value="2" min="1" max="5">
+                <select id="sev_post">
+                    <option value="1">1 - Leve</option>
+                    <option value="2" selected>2 - Menor</option>
+                    <option value="3">3 - Moderado</option>
+                    <option value="4">4 - Grave</option>
+                    <option value="5">5 - Fatal</option>
+                </select>
             </div>
 
             <div>
                 <label>LIKL Post</label>
-                <input type="number" id="likl_post" value="2" min="1" max="5">
+                <select id="likl_post">
+                    <option value="1">1 - Raro</option>
+                    <option value="2" selected>2 - Poco probable</option>
+                    <option value="3">3 - Posible</option>
+                    <option value="4">4 - Probable</option>
+                    <option value="5">5 - Muy probable</option>
+                </select>
             </div>
 
             <div>
                 <label>CONT Post</label>
-                <input type="number" id="cont_post" value="2" min="1" max="5">
+                <select id="cont_post">
+                    <option value="1">1 - Muy efectivo</option>
+                    <option value="2" selected>2 - Efectivo</option>
+                    <option value="3">3 - Parcial</option>
+                    <option value="4">4 - Deficiente</option>
+                    <option value="5">5 - Sin control</option>
+                </select>
             </div>
         </div>
 
@@ -209,6 +343,18 @@ function colorRPN(rpn) {
     if (rpn <= 10) return "bajo";
     if (rpn <= 30) return "medio";
     return "alto";
+}
+
+function copiarHazard() {
+    const select = document.getElementById("hazard_select");
+    const peligro = document.getElementById("peligro");
+
+    if (select.value === "Otro") {
+        peligro.value = "";
+        peligro.focus();
+    } else {
+        peligro.value = select.value;
+    }
 }
 
 function comprimirImagen(archivo, callback) {
@@ -271,6 +417,11 @@ function agregarFila() {
         cont_post: document.getElementById("cont_post").value
     };
 
+    if (!item.area || !item.actividad || !item.peligro) {
+        alert("Debe llenar área, actividad y peligro.");
+        return;
+    }
+
     const archivo = document.getElementById("foto").files[0];
 
     if (archivo) {
@@ -294,6 +445,7 @@ function limpiarFormulario() {
     document.getElementById("existing_controls").value = "";
     document.getElementById("recommended_controls").value = "";
     document.getElementById("foto").value = "";
+    document.getElementById("hazard_select").value = "";
 }
 
 function eliminarFila(index) {
