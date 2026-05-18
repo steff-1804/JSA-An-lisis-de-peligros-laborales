@@ -66,9 +66,9 @@ def exportar_excel():
     ws["C5"].font = Font(bold=True)
 
     ws.merge_cells("L1:M1")
-    ws["L1"] = f"Version: {info.get('version_jsa', '')}"
+    ws["L1"] = "JSA"
     ws["L1"].font = Font(bold=True, size=13)
-    ws["L1"].alignment = Alignment(horizontal="center")
+    ws["L1"].alignment = Alignment(horizontal="center", vertical="center")
 
     ws.merge_cells("L2:M5")
 
@@ -95,13 +95,18 @@ def exportar_excel():
 
     ws.merge_cells("A6:B6")
     ws["A6"] = "Job / Activity Step"
+
     ws["C6"] = "Photos"
+
     ws.merge_cells("D6:E6")
     ws["D6"] = "Hazards and Potential Consequences"
+
     ws.merge_cells("F6:J6")
     ws["F6"] = "EXISTING / CURRENT CONDITION RANKING"
+
     ws.merge_cells("K6:K7")
     ws["K6"] = "Recommended Controls"
+
     ws.merge_cells("L6:M6")
     ws["L6"] = "POST RANKINGS"
 
@@ -119,10 +124,23 @@ def exportar_excel():
     ws["L6"].fill = post_fill
 
     headers = [
-        "Área", "Job / Activity Step", "Photos", "Type",
-        "Hazards and Potential Consequences", "SEV 1-5", "LIKL 1-5",
-        "Type", "Existing Controls", "CONT 1-5", "RPN",
-        "Type", "Recommended Controls", "SEV 1-5", "LIKL 1-5", "CONT 1-5", "RPN"
+        "Área",
+        "Job / Activity Step",
+        "Photos",
+        "Type",
+        "Hazards and Potential Consequences",
+        "SEV 1-5",
+        "LIKL 1-5",
+        "Type",
+        "Existing Controls",
+        "CONT 1-5",
+        "RPN",
+        "Type",
+        "Recommended Controls",
+        "SEV 1-5",
+        "LIKL 1-5",
+        "CONT 1-5",
+        "RPN"
     ]
 
     start_row = 7
@@ -176,12 +194,14 @@ def exportar_excel():
 
         for col in [11, 17]:
             cell = ws.cell(row=row_index, column=col)
+
             if cell.value <= 10:
                 cell.fill = green_fill
             elif cell.value <= 30:
                 cell.fill = yellow_fill
             else:
                 cell.fill = red_fill
+
             cell.font = Font(bold=True)
             cell.alignment = Alignment(horizontal="center", vertical="center")
 
