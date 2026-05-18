@@ -2,14 +2,14 @@ from flask import Flask, render_template, request, send_file
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.drawing.image import Image as ExcelImage
-from io import BytesIO
 from PIL import Image
-import json
+from io import BytesIO
 import base64
-import os
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
+
+# Aumentar límite de subida
+app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
 
 
 @app.route("/")
@@ -17,232 +17,193 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/exportar_excel", methods=["POST"])
-def exportar_excel():
-    data = json.loads(request.form.get("data", "[]"))
-    info = json.loads(request.form.get("info_general", "{}"))
+@app.route("/exportar", methods=["POST"])
+def exportar():
+
+    datos = request.json
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Matriz JSA"
 
-    header_fill = PatternFill("solid", fgColor="071A35")
-    subheader_fill = PatternFill("solid", fgColor="D9EAF7")
-    hazard_fill = PatternFill("solid", fgColor="FCE4D6")
-    existing_fill = PatternFill("solid", fgColor="DAEEF3")
-    recommended_fill = PatternFill("solid", fgColor="CCFF66")
-    post_fill = PatternFill("solid", fgColor="D9EAD3")
+    # =========================
+    # ESTILOS
+    # =========================
 
-    green_fill = PatternFill("solid", fgColor="86EFAC")
-    yellow_fill = PatternFill("solid", fgColor="FDE047")
-    red_fill = PatternFill("solid", fgColor="F87171")
+    azul = PatternFill(start_color="0B1F3A", end_color="0B1F3A", fill_type="solid")
+    verde = PatternFill(start_color="D9F99D", end_color="D9F99D", fill_type="solid")
+    amarillo = PatternFill(start_color="FFF59D", end_color="FFF59D", fill_type="solid")
+    rojo = PatternFill(start_color="EF9A9A", end_color="EF9A9A", fill_type="solid")
 
-    thin = Side(border_style="thin", color="000000")
-    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    borde = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
 
-    # ENCABEZADO PRINCIPAL
-    ws.merge_cells("A1:B1")
-    ws["A1"] = "Risk Assessment / Job Hazard Analysis Evaluación de Riesgos / Análisis de Peligros Laborales"
-    ws["A1"].font = Font(bold=True, size=13)
-    ws["A1"].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    titulo_font = Font(bold=True, size=14, color="FFFFFF")
+    header_font = Font(bold=True)
 
-    ws.merge_cells("A2:B5")
-    ws["A2"] = f"TASK DESCRIPTION: DESCRIPCIÓN DEL TRABAJO:\n{info.get('descripcion_trabajo', '')}"
-    ws["A2"].font = Font(bold=True)
-    ws["A2"].alignment = Alignment(vertical="top", wrap_text=True)
+    # =========================
+    # ENCABEZADO
+    # =========================
 
-    ws.merge_cells("C2:K2")
-    ws["C2"] = f"TITLE: TÍTULO DEL JSA: {info.get('titulo_jsa', '')}"
-    ws["C2"].font = Font(bold=True)
+    ws.merge_cells("A1:C3")
+    ws["A1"] = "TASK DESCRIPTION / DESCRIPCIÓN DEL TRABAJO"
+    ws["A1"].font = header_font
 
-    ws.merge_cells("C3:K3")
-    ws["C3"] = f"DOCUMENT REFERENCE NUMBER: {info.get('documento_referencia', '')}"
-    ws["C3"].font = Font(bold=True)
+    ws.merge_cells("D1:J1")
+    ws["D1"] = "Risk Assessment / Job Hazard Analysis"
+    ws["D1"].font = Font(bold=True, size=16)
 
-    ws.merge_cells("C4:K4")
-    ws["C4"] = f"TEAM MEMBERS: MIEMBROS DEL EQUIPO JSA: {info.get('miembros_equipo', '')}"
-    ws["C4"].font = Font(bold=True)
+    ws["K1"] = "Version"
+    ws["L1"] = "Mar 2026"
 
-    ws.merge_cells("C5:K5")
-    ws["C5"] = f"DATE: {info.get('fecha_jsa', '')}"
-    ws["C5"].font = Font(bold=True)
+    ws["D2"] = "TITLE:"
+    ws["E2"] = datos["titulo"]
 
-    ws.merge_cells("L1:M1")
-    ws["L1"] = f"Version: {info.get('version_jsa', '')}"
-    ws["L1"].font = Font(bold=True, size=13)
-    ws["L1"].alignment = Alignment(horizontal="center")
+    ws["D3"] = "DOCUMENT REFERENCE:"
+    ws["E3"] = datos["documento"]
 
-    ws.merge_cells("L2:M5")
+    ws["D4"] = "TEAM MEMBERS:"
+    ws["E4"] = datos["miembros"]
 
-    logo_path = os.path.join(app.root_path, "static", "img", "logo.png")
-    if os.path.exists(logo_path):
-        try:
-            logo = ExcelImage(logo_path)
-            logo.width = 120
-            logo.height = 90
-            ws.add_image(logo, "L2")
-        except Exception:
-            ws["L2"] = "LOGO"
+    ws["D5"] = "DATE:"
+    ws["E5"] = datos["fecha"]
 
-    for row in ws.iter_rows(min_row=1, max_row=5, min_col=1, max_col=13):
-        for cell in row:
-            cell.border = border
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
+    # =========================
+    # TABLA
+    # =========================
 
-    ws.row_dimensions[1].height = 25
-    ws.row_dimensions[2].height = 30
-    ws.row_dimensions[3].height = 30
-    ws.row_dimensions[4].height = 30
-    ws.row_dimensions[5].height = 30
-
-    # FILA DE SECCIONES
-    ws.merge_cells("A6:B6")
-    ws["A6"] = "Job / Activity Step"
-    ws["C6"] = "Photos"
-    ws.merge_cells("D6:E6")
-    ws["D6"] = "Hazards and Potential Consequences"
-
-    ws.merge_cells("F6:J6")
-    ws["F6"] = "EXISTING / CURRENT CONDITION RANKING"
-
-    ws.merge_cells("K6:K7")
-    ws["K6"] = "Recommended Controls"
-
-    ws.merge_cells("L6:M6")
-    ws["L6"] = "POST RANKINGS"
-
-    section_cells = ["A6", "C6", "D6", "F6", "K6", "L6"]
-    for cell in section_cells:
-        ws[cell].font = Font(bold=True)
-        ws[cell].alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-        ws[cell].border = border
-
-    ws["A6"].fill = subheader_fill
-    ws["C6"].fill = subheader_fill
-    ws["D6"].fill = hazard_fill
-    ws["F6"].fill = existing_fill
-    ws["K6"].fill = recommended_fill
-    ws["L6"].fill = post_fill
-
-    # SUBENCABEZADOS
     headers = [
-        "Área", "Job / Activity Step", "Photos", "Type",
-        "Hazards and Potential Consequences", "SEV 1-5", "LIKL 1-5",
-        "Type", "Existing Controls", "CONT 1-5", "RPN",
-        "Type", "Recommended Controls", "SEV 1-5", "LIKL 1-5", "CONT 1-5", "RPN"
+        "Foto",
+        "Actividad / Paso de trabajo",
+        "Área",
+        "Peligro y consecuencia potencial",
+        "Tipo riesgo",
+        "SEV",
+        "LIKL",
+        "CONT",
+        "RPN",
+        "Tipo control",
+        "Existing Controls",
+        "Recommended Controls"
     ]
 
-    start_row = 7
-    for col_index, header in enumerate(headers, start=1):
-        cell = ws.cell(row=start_row, column=col_index)
+    fila_inicio = 7
+
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=fila_inicio, column=col)
         cell.value = header
-        cell.font = Font(bold=True)
+        cell.fill = azul
+        cell.font = titulo_font
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-        cell.fill = subheader_fill
-        cell.border = border
+        cell.border = borde
 
+    # =========================
     # DATOS
-    data_start = 8
+    # =========================
 
-    for row_index, item in enumerate(data, start=data_start):
-        sev = int(item.get("sev", 1))
-        likl = int(item.get("likl", 1))
-        cont = int(item.get("cont", 1))
+    fila = fila_inicio + 1
 
-        sev_post = int(item.get("sev_post", 1))
-        likl_post = int(item.get("likl_post", 1))
-        cont_post = int(item.get("cont_post", 1))
+    for item in datos["matriz"]:
 
-        rpn = sev * likl * cont
-        rpn_post = sev_post * likl_post * cont_post
+        rpn = int(item["sev"]) * int(item["likl"]) * int(item["cont"])
 
-        values = [
-            item.get("area", ""),
-            item.get("actividad", ""),
+        ws.row_dimensions[fila].height = 120
+
+        valores = [
             "",
-            item.get("tipo_riesgo", ""),
-            item.get("peligro", ""),
-            sev,
-            likl,
-            item.get("tipo_control_existente", ""),
-            item.get("existing_controls", ""),
-            cont,
+            item["actividad"],
+            item["area"],
+            item["peligro"],
+            item["tipo_riesgo"],
+            item["sev"],
+            item["likl"],
+            item["cont"],
             rpn,
-            item.get("tipo_control_recomendado", ""),
-            item.get("recommended_controls", ""),
-            sev_post,
-            likl_post,
-            cont_post,
-            rpn_post
+            item["tipo_control"],
+            item["existing_controls"],
+            item["recommended_controls"]
         ]
 
-        for col_index, value in enumerate(values, start=1):
-            cell = ws.cell(row=row_index, column=col_index)
-            cell.value = value
-            cell.border = border
-            cell.alignment = Alignment(vertical="center", wrap_text=True)
+        for col, valor in enumerate(valores, 1):
 
-        # Colores RPN
-        for col in [11, 17]:
-            cell = ws.cell(row=row_index, column=col)
-            if cell.value <= 10:
-                cell.fill = green_fill
-            elif cell.value <= 30:
-                cell.fill = yellow_fill
-            else:
-                cell.fill = red_fill
-            cell.font = Font(bold=True)
-            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell = ws.cell(row=fila, column=col)
+            cell.value = valor
+            cell.alignment = Alignment(
+                vertical="center",
+                horizontal="center",
+                wrap_text=True
+            )
+            cell.border = borde
 
-        # Foto
-        foto_base64 = item.get("foto", "")
-        if foto_base64:
+        # COLOR RPN
+        rpn_cell = ws.cell(row=fila, column=9)
+
+        if rpn <= 10:
+            rpn_cell.fill = verde
+        elif rpn <= 30:
+            rpn_cell.fill = amarillo
+        else:
+            rpn_cell.fill = rojo
+
+        # =========================
+        # INSERTAR IMAGEN
+        # =========================
+
+        if item["foto"]:
+
             try:
-                _, encoded = foto_base64.split(",", 1)
-                image_data = base64.b64decode(encoded)
 
-                image_stream = BytesIO(image_data)
-                pil_image = Image.open(image_stream)
-                pil_image.thumbnail((150, 100))
+                img_data = item["foto"].split(",")[1]
+                image_bytes = base64.b64decode(img_data)
 
-                final_stream = BytesIO()
-                pil_image.save(final_stream, format="PNG")
-                final_stream.seek(0)
+                image = Image.open(BytesIO(image_bytes))
 
-                excel_img = ExcelImage(final_stream)
-                excel_img.width = 140
-                excel_img.height = 95
+                image.thumbnail((120, 120))
 
-                ws.add_image(excel_img, f"C{row_index}")
-                ws.row_dimensions[row_index].height = 80
+                temp = BytesIO()
+                image.save(temp, format="PNG")
+                temp.seek(0)
 
-            except Exception:
-                ws.cell(row=row_index, column=3).value = "Imagen no válida"
+                excel_img = ExcelImage(temp)
+                excel_img.width = 100
+                excel_img.height = 100
 
-    column_widths = {
+                ws.add_image(excel_img, f"A{fila}")
+
+            except:
+                pass
+
+        fila += 1
+
+    # =========================
+    # ANCHOS
+    # =========================
+
+    widths = {
         "A": 18,
-        "B": 30,
-        "C": 22,
-        "D": 10,
-        "E": 45,
+        "B": 35,
+        "C": 20,
+        "D": 40,
+        "E": 15,
         "F": 10,
         "G": 10,
         "H": 10,
-        "I": 45,
-        "J": 10,
-        "K": 10,
-        "L": 10,
-        "M": 45,
-        "N": 10,
-        "O": 10,
-        "P": 10,
-        "Q": 10
+        "I": 12,
+        "J": 18,
+        "K": 40,
+        "L": 40
     }
 
-    for col, width in column_widths.items():
+    for col, width in widths.items():
         ws.column_dimensions[col].width = width
 
-    ws.freeze_panes = "A8"
+    # =========================
+    # EXPORTAR
+    # =========================
 
     output = BytesIO()
     wb.save(output)
@@ -250,10 +211,11 @@ def exportar_excel():
 
     return send_file(
         output,
-        download_name="Matriz_JSA.xlsx",
         as_attachment=True,
+        download_name="Matriz_JSA.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-    if __name__ == "__main__":
+
+if __name__ == "__main__":
     app.run(debug=True)
