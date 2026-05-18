@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador JSA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header class="hero">
+    <div class="hero-left">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" class="logo">
+        <div>
+            <h1>Generador JSA</h1>
+            <p>Sistema de análisis seguro de trabajo</p>
+        </div>
+    </div>
+    <span class="badge">EHS</span>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Información general del JSA</h2>
+
+        <div class="form-group">
+            <label>Task Description / Descripción del trabajo</label>
+            <textarea id="descripcion_trabajo"></textarea>
+        </div>
+
+        <div class="grid">
+            <div>
+                <label>Title / Título del JSA</label>
+                <input type="text" id="titulo_jsa">
+            </div>
+
+            <div>
+                <label>Document Reference Number</label>
+                <input type="text" id="documento_referencia">
+            </div>
+
+            <div>
+                <label>Date / Fecha</label>
+                <input type="text" id="fecha_jsa" placeholder="Ej: Febrero 12, 2026">
+            </div>
+
+            <div>
+                <label>Version</label>
+                <input type="text" id="version_jsa" placeholder="Ej: Mar 2024">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Team Members / Miembros del equipo JSA</label>
+            <textarea id="miembros_equipo"></textarea>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Registro de peligro</h2>
+
+        <div class="form-group">
+            <label>Foto de la actividad</label>
+            <input type="file" id="foto">
+        </div>
+
+        <div class="grid">
+            <div>
+                <label>Área</label>
+                <input type="text" id="area">
+            </div>
+
+            <div>
+                <label>Job / Activity Step</label>
+                <input type="text" id="actividad">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Hazards and Potential Consequences</label>
+            <textarea id="peligro"></textarea>
+        </div>
+
+        <div class="grid">
+            <div>
+                <label>Tipo de riesgo</label>
+                <select id="tipo_riesgo">
+                    <option>Phys.</option>
+                    <option>Chem.</option>
+                    <option>Erg.</option>
+                    <option>Bio.</option>
+                    <option>Psico.</option>
+                    <option>Elec.</option>
+                </select>
+            </div>
+
+            <div>
+                <label>SEV</label>
+                <input type="number" id="sev" value="3" min="1" max="5">
+            </div>
+
+            <div>
+                <label>LIKL</label>
+                <input type="number" id="likl" value="2" min="1" max="5">
+            </div>
+
+            <div>
+                <label>CONT</label>
+                <input type="number" id="cont" value="3" min="1" max="5">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Tipo control existente</label>
+            <select id="tipo_control_existente">
+                <option>Adm.</option>
+                <option>Eng.</option>
+                <option>PPE</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Existing Controls</label>
+            <textarea id="existing_controls"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Tipo control recomendado</label>
+            <select id="tipo_control_recomendado">
+                <option>Adm.</option>
+                <option>Eng.</option>
+                <option>PPE</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Recommended Controls</label>
+            <textarea id="recommended_controls"></textarea>
+        </div>
+
+        <div class="grid">
+            <div>
+                <label>SEV Post</label>
+                <input type="number" id="sev_post" value="2" min="1" max="5">
+            </div>
+
+            <div>
+                <label>LIKL Post</label>
+                <input type="number" id="likl_post" value="2" min="1" max="5">
+            </div>
+
+            <div>
+                <label>CONT Post</label>
+                <input type="number" id="cont_post" value="2" min="1" max="5">
+            </div>
+        </div>
+
+        <button onclick="agregarFila()" class="btn">Agregar actividad</button>
+    </div>
+
+    <div class="card">
+        <h2>Matriz generada</h2>
+
+        <table id="tabla">
+            <thead>
+                <tr>
+                    <th>Área</th>
+                    <th>Foto</th>
+                    <th>Actividad</th>
+                    <th>Peligro</th>
+                    <th>Tipo</th>
+                    <th>SEV</th>
+                    <th>LIKL</th>
+                    <th>Existing Controls</th>
+                    <th>CONT</th>
+                    <th>RPN</th>
+                    <th>Recommended Controls</th>
+                    <th>SEV P</th>
+                    <th>LIKL P</th>
+                    <th>CONT P</th>
+                    <th>RPN P</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <form method="POST" action="/exportar_excel" onsubmit="return prepararExportacion()">
+            <input type="hidden" name="data" id="data">
+            <input type="hidden" name="info_general" id="info_general">
+            <button type="submit" class="btn export">Exportar Excel</button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+
+let matriz = [];
+
+function calcularRPN(sev, likl, cont) {
+    return Number(sev) * Number(likl) * Number(cont);
+}
+
+function colorRPN(rpn) {
+    if (rpn <= 10) return "bajo";
+    if (rpn <= 30) return "medio";
+    return "alto";
+}
+
+function comprimirImagen(archivo, callback) {
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+        const img = new Image();
+
+        img.onload = function() {
+            const canvas = document.createElement("canvas");
+            const maxWidth = 900;
+            const maxHeight = 700;
+
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = height * (maxWidth / width);
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = width * (maxHeight / height);
+                    height = maxHeight;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            callback(canvas.toDataURL("image/jpeg", 0.55));
+        };
+
+        img.src = event.target.result;
+    };
+
+    reader.readAsDataURL(archivo);
+}
+
+function agregarFila() {
+    const item = {
+        foto: "",
+        area: document.getElementById("area").value,
+        actividad: document.getElementById("actividad").value,
+        peligro: document.getElementById("peligro").value,
+        tipo_riesgo: document.getElementById("tipo_riesgo").value,
+        sev: document.getElementById("sev").value,
+        likl: document.getElementById("likl").value,
+        cont: document.getElementById("cont").value,
+        tipo_control_existente: document.getElementById("tipo_control_existente").value,
+        existing_controls: document.getElementById("existing_controls").value,
+        tipo_control_recomendado: document.getElementById("tipo_control_recomendado").value,
+        recommended_controls: document.getElementById("recommended_controls").value,
+        sev_post: document.getElementById("sev_post").value,
+        likl_post: document.getElementById("likl_post").value,
+        cont_post: document.getElementById("cont_post").value
+    };
+
+    const archivo = document.getElementById("foto").files[0];
+
+    if (archivo) {
+        comprimirImagen(archivo, function(imagenComprimida) {
+            item.foto = imagenComprimida;
+            matriz.push(item);
+            renderTabla();
+            limpiarFormulario();
+        });
+    } else {
+        matriz.push(item);
+        renderTabla();
+        limpiarFormulario();
+    }
+}
+
+function limpiarFormulario() {
+    document.getElementById("area").value = "";
+    document.getElementById("actividad").value = "";
+    document.getElementById("peligro").value = "";
+    document.getElementById("existing_controls").value = "";
+    document.getElementById("recommended_controls").value = "";
+    document.getElementById("foto").value = "";
+}
+
+function eliminarFila(index) {
+    matriz.splice(index, 1);
+    renderTabla();
+}
+
+function renderTabla() {
+    const tbody = document.querySelector("#tabla tbody");
+    tbody.innerHTML = "";
+
+    matriz.forEach((item, index) => {
+        const rpn = calcularRPN(item.sev, item.likl, item.cont);
+        const rpnPost = calcularRPN(item.sev_post, item.likl_post, item.cont_post);
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${item.area}</td>
+            <td>${item.foto ? `<img src="${item.foto}" class="mini-foto">` : ""}</td>
+            <td>${item.actividad}</td>
+            <td>${item.peligro}</td>
+            <td>${item.tipo_riesgo}</td>
+            <td>${item.sev}</td>
+            <td>${item.likl}</td>
+            <td><b>${item.tipo_control_existente}</b>: ${item.existing_controls}</td>
+            <td>${item.cont}</td>
+            <td class="${colorRPN(rpn)}">${rpn}</td>
+            <td><b>${item.tipo_control_recomendado}</b>: ${item.recommended_controls}</td>
+            <td>${item.sev_post}</td>
+            <td>${item.likl_post}</td>
+            <td>${item.cont_post}</td>
+            <td class="${colorRPN(rpnPost)}">${rpnPost}</td>
+            <td><button class="delete" onclick="eliminarFila(${index})">X</button></td>
+        </tr>`;
+    });
+}
+
+function prepararExportacion() {
+    const infoGeneral = {
+        descripcion_trabajo: document.getElementById("descripcion_trabajo").value,
+        titulo_jsa: document.getElementById("titulo_jsa").value,
+        documento_referencia: document.getElementById("documento_referencia").value,
+        miembros_equipo: document.getElementById("miembros_equipo").value,
+        fecha_jsa: document.getElementById("fecha_jsa").value,
+        version_jsa: document.getElementById("version_jsa").value
+    };
+
+    document.getElementById("data").value = JSON.stringify(matriz);
+    document.getElementById("info_general").value = JSON.stringify(infoGeneral);
+
+    return true;
+}
+
+</script>
+
+</body>
+</html>
